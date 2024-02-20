@@ -1,0 +1,54 @@
+name: Deploy on LocalStack 
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  cdk:
+    name: Setup infrastructure using CDK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup Python 
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@main
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+
+      - name: Install CDK
+        run: |
+          npm install -g aws-cdk-local aws-cdk
+          cdklocal --version
+
+      - name: Install dependencies
+        run: |
+          pip3 install -r requirements.txt
+
+      - name: Bootstrap using CDK
+        run: |
+          cdklocal bootstrap aws://000000000000/us-east-1
+
+      - name: Synthesize using CDK
+        run: |
+          cdklocal synth
+
+      - name: Deploy using CDK
+        run: |
+          cdklocal deploy --require-approval never
