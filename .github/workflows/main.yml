@@ -31,6 +31,9 @@ jobs:
         with:
           image-tag: 'latest'
           install-awslocal: 'true'
+          use-pro: 'true'
+        env:
+          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
 
       - name: Install CDK
         run: |
@@ -52,3 +55,9 @@ jobs:
       - name: Deploy using CDK
         run: |
           cdklocal deploy --require-approval never
+
+
+      - name: Run integration tests 
+        run: |
+          pip3 install boto3 pytest 
+          pytest
